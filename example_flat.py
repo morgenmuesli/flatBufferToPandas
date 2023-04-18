@@ -1,3 +1,4 @@
+import json
 import random
 
 import flatbuffers
@@ -13,9 +14,10 @@ class Outbox:
     def __init__(self, url):
         self._file_path = url
 
-    def send(self, data):
-        with open(self._file_path, 'wb') as file:
+    def send_cloud_message(self, data):
+        with open(self._file_path, 'w') as file:
             file.write(data)
+
 
 
 class Database:
@@ -31,6 +33,10 @@ class Database:
             buffer = file.read()
             buffer = bytearray(buffer)
         return buffer
+
+    def save_edge_module_storage(self, data):
+        with open(self._file_path, 'wb') as file:
+            file.write(data)
 
 
 class GPSMessage:
@@ -108,6 +114,7 @@ def run(persistent_data: Database,data_provider:DataProvider, outbox: Outbox):
         # read sbyte buffer with flat_buffers
         print(" we have a persistent data ")
         sum_lat, sum_lon, counter = read_persistent_data(storage)
+        print(f"sum lon = {sum_lon} sum_lat = {sum_lat} counter = {counter}")
     else:
         print("no peristent data available")
 
@@ -127,15 +134,23 @@ def run(persistent_data: Database,data_provider:DataProvider, outbox: Outbox):
     print(f"average lon = {aver_lon} average lat = {aver_lat} ")
 
     output_buffer = write_persistent_data(sum_lat, sum_lon, counter)
+    database.save_edge_module_storage(output_buffer)
 
-    outbox.send(output_buffer)
+    dictionary = {
+        "average lon": aver_lon,
+        "average lat": aver_lat
+    }
+    json_object = json.dumps(dictionary, indent=4)
+    outbox.send_cloud_message(json_object)
+
+    print("edge module finished")
 
 
 if __name__ == '__main__':
     # create a data provider
     data_provider = DataProvider()
     # create a database
-    database = Database('database.bin')
+    database = Database('outbox.bin')
     # create a outbox
     outbox = Outbox('outbox.bin')
     # run the example
