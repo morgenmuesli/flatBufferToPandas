@@ -1,6 +1,6 @@
 import json
 import random
-
+import os
 import flatbuffers
 import persistent_state.Persistent
 import persistent_state
@@ -148,6 +148,8 @@ def run(persistent_data: Database,data_provider:DataProvider, outbox: Outbox):
 
 if __name__ == '__main__':
     # create a data provider
+
+
     data_provider = DataProvider()
     # create a database
     database = Database('outbox.bin')
