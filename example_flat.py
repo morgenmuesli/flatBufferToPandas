@@ -4,6 +4,7 @@ import os
 import flatbuffers
 import persistent_state.Persistent
 import persistent_state
+import PersistentStruct
 
 
 class Outbox:
@@ -94,6 +95,18 @@ def write_persistent_data(sum_lat, sum_lon, counter):
     return builder.Output()
 
 
+def read_persistent(buffer):
+    n = flatbuffers.encode.Get(flatbuffers.packer.uoffset, buffer, 0)
+    x = PersistentStruct.PersistentStruct()
+    x.Init(buffer, n)
+    return x
+
+def write_persistent(lat, lon, counter):
+    builder = flatbuffers.Builder(0)
+    pos = PersistentStruct.CreatePersistentStruct(builder, lat, lon, counter)
+    builder.Finish(pos)
+    return builder.Output()
+
 def run(persistent_data: Database,data_provider:DataProvider, outbox: Outbox):
     """
 
@@ -113,7 +126,10 @@ def run(persistent_data: Database,data_provider:DataProvider, outbox: Outbox):
     if len(storage) != 0:
         # read sbyte buffer with flat_buffers
         print(" we have a persistent data ")
-        sum_lat, sum_lon, counter = read_persistent_data(storage)
+        x = read_persistent(storage)
+        sum_lat = x.SumLat()
+        sum_lon = x.SumLon()
+        counter = x.Counter()
         print(f"sum lon = {sum_lon} sum_lat = {sum_lat} counter = {counter}")
     else:
         print("no peristent data available")
@@ -133,7 +149,7 @@ def run(persistent_data: Database,data_provider:DataProvider, outbox: Outbox):
 
     print(f"average lon = {aver_lon} average lat = {aver_lat} ")
 
-    output_buffer = write_persistent_data(sum_lat, sum_lon, counter)
+    output_buffer = write_persistent(sum_lat, sum_lon, counter)
     database.save_edge_module_storage(output_buffer)
 
     dictionary = {
@@ -152,7 +168,7 @@ if __name__ == '__main__':
 
     data_provider = DataProvider()
     # create a database
-    database = Database('outbox.bin')
+    database = Database('database.bin')
     # create a outbox
     outbox = Outbox('outbox.bin')
     # run the example
