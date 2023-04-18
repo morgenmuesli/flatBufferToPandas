@@ -1,0 +1,10 @@
+namespace persistent_state;
+
+table Persistent {
+    sum_lat:double = 0;
+    sum_lon:double = 0;
+    counter:int = 0;
+}
+
+
+root_type Persistent;

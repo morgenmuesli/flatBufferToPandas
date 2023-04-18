@@ -10,7 +10,8 @@ import MyGame.Sample.Equipment
 import MyGame.Sample.Monster
 import MyGame.Sample.Vec3
 import MyGame.Sample.Weapon
-
+import json
+import os
 MINIMUM_BUFFER_SIZE = 1024
 
 
@@ -152,5 +153,13 @@ if __name__ == '__main__':
     write_sample_game(builder)
     monster = read_sample_game("monster.bin")
     print_monster(monster)
+
+
+
+
+
+
+
+
 
 
